@@ -22,6 +22,7 @@ def scrape_comments(page_url, account_name):
     page = ChromiumPage(co)
     
     results = []
+    seen_ids = set()
     
     try:
         # 2. Force Basic Mobile Site (The "Unbreakable" Version)
@@ -96,150 +97,139 @@ def scrape_comments(page_url, account_name):
             post_link.click()
             random_sleep(2, 4)
             
-            # 5. Extract Comments
-            comment_divs = page.eles("tag:div")
-            print(f"Debug: Found {len(comment_divs)} potential comment divs", file=sys.stderr)
+            # 5. Extract Comments (Infinite Loop)
+            # Loop until we hit limit or cannot find more comments
+            MAX_COMMENTS = 1000
+            no_new_content_count = 0
             
-            seen_ids = set()
-            
-            for div in comment_divs:
-                if len(results) >= 5: break
-                
+            while len(results) < MAX_COMMENTS:
+                # 1. Expand "View more comments" if available
                 try:
-                    text_content = div.text
-                    # print(f"Debug: Checking div text: {text_content[:30]}...", file=sys.stderr)
-                    # strict cleanliness
-                    raw_lines = [l.strip() for l in text_content.split('\n') if l.strip()]
+                    # Look for "View more comments" or "View previous comments"
+                    # Usually "View more comments" or "View 3 more comments"
+                    more_btns = page.eles("text:View more comments")
+                    if not more_btns:
+                        more_btns = page.eles("text:View previous comments")
                     
-                    # DEBUG raw text structure to find the "Tell"
-                    # print(f"Debug Raw Block: {raw_lines}", file=sys.stderr)
+                    if more_btns:
+                        print("Debug: Clicking 'View more comments'...", file=sys.stderr)
+                        for btn in more_btns:
+                            if btn.states.is_displayed:
+                                btn.click(by_js=True) # JS click is safer for overlay elements
+                                random_sleep(2, 4)
+                except:
+                    pass
+                
+                # 2. Extract visible comments
+                comment_divs = page.eles("tag:div")
+                new_items_found = 0
+                
+                for div in comment_divs:
+                    if len(results) >= MAX_COMMENTS: break
                     
-                    if len(raw_lines) < 2: continue
-                    if len(raw_lines) < 2: 
-                        # print("Debug: Rejected (Too short)", file=sys.stderr)
-                        continue
+                    try:
+                        text_content = div.text
+                        raw_lines = [l.strip() for l in text_content.split('\n') if l.strip()]
                         
-                    full_blob = " ".join(raw_lines).lower()
-                    
-                    # 1. STRUCTURAL VALIDATION (The "AI" Check) - RELAXED
-                    # Require at least ONE strong signal: "Like", "Reply", or a Timestamp
-                    has_signal = False
-                    if "like" in full_blob and ("reply" in full_blob or "min" in full_blob or "h" in full_blob or "d" in full_blob):
-                        has_signal = True
-                    elif "reply" in full_blob:
-                        has_signal = True
+                        if len(raw_lines) < 2: continue
+                            
+                        full_blob = " ".join(raw_lines).lower()
                         
-                    if not has_signal:
-                        # print(f"Debug: Rejected (No structural signal): {raw_lines[0]}...", file=sys.stderr)
-                        continue
+                        # 1. STRUCTURAL VALIDATION (Relaxed)
+                        has_signal = False
+                        if "like" in full_blob and ("reply" in full_blob or "min" in full_blob or "h" in full_blob or "d" in full_blob):
+                            has_signal = True
+                        elif "reply" in full_blob:
+                            has_signal = True
+                            
+                        if not has_signal: continue
 
-                    # 2. Main Post Rejection
-                    if "share" in full_blob and "comment" in full_blob:
-                        print("Debug: Rejected (Main Post detected)", file=sys.stderr)
+                        # 2. Main Post Rejection
+                        if "share" in full_blob and "comment" in full_blob: continue
+                        if "fanpage's post" in full_blob or "subscribe" in full_blob: continue
+                             
+                        # 3. Wrapper Rejection
+                        if "most relevant" in full_blob or "view more comments" in full_blob: continue
+
+                        # 4. Extract Author & Text
+                        author = raw_lines[0]
+                        text_start_idx = 1
+                        
+                        # BADGE DETECTION
+                        badges = ['rising fan', 'top fan', 'valued commenter', 'milestone follower', 'author', 'admin']
+                        if author.lower() in badges and len(raw_lines) > 2:
+                            author = f"{raw_lines[0]} {raw_lines[1]}"
+                            text_start_idx = 2
+                        
+                        # Find Footer
+                        footer_idx = -1
+                        for i, r in enumerate(raw_lines):
+                            if i < text_start_idx: continue
+                            if len(r) > 60: continue # Footer safety
+                            
+                            r_lower = r.lower()
+                            if ("like" in r_lower and ("reply" in r_lower or any(c.isdigit() for c in r))) or \
+                               ("received" not in r_lower and "reply" in r_lower):
+                                footer_idx = i
+                                break
+                        
+                        if footer_idx == -1: continue 
+                        
+                        # Text Extraction
+                        text_parts = raw_lines[text_start_idx:footer_idx]
+                        comment_text = " ".join(text_parts).strip()
+                        
+                        # 5. CLEANING
+                        if comment_text.lower().startswith(author.lower()):
+                             comment_text = comment_text[len(author):].strip()
+
+                        while True: # ITERATIVE SCRUBBER
+                            original_len = len(comment_text)
+                            comment_text = re.sub(r'\s+(Like|Reply|Edited)\s*$', '', comment_text, flags=re.IGNORECASE)
+                            comment_text = re.sub(r'\s+\d+\s*[mhdyw]\s*$', '', comment_text, flags=re.IGNORECASE)
+                            if len(comment_text) == original_len: break
+
+                        # 6. JUNK DETECTION
+                        if not comment_text or len(comment_text) < 2: continue
+                        low_text = comment_text.lower()
+                        if low_text in ['like', 'reply', 'like reply', 'share', 'edited']: continue
+                        if re.match(r'^[\d\s\W]+$', comment_text): continue
+                        if "browser" in low_text or "facebook app" in low_text: continue
+
+                        c_id = str(hash(author + comment_text))
+                        
+                        if c_id not in seen_ids:
+                            results.append({
+                                "comment_id": c_id,
+                                "author": author,
+                                "text": comment_text,
+                                "post_url": page.url
+                            })
+                            seen_ids.add(c_id)
+                            new_items_found += 1
+                            print(f"Debug: Extracted: {author} -> {comment_text[:20]}...", file=sys.stderr)
+                            
+                    except Exception:
                         continue
-                    if "fanpage's post" in full_blob or "subscribe" in full_blob:
-                         continue
-                         
-                    # 3. Wrapper Rejection
-                    if "most relevant" in full_blob or "view more comments" in full_blob:
-                        # print("Debug: Rejected (Wrapper)", file=sys.stderr)
-                        continue
-
-                    # 4. Extract Author & Text
-                    author = raw_lines[0]
-                    text_start_idx = 1
+                
+                # Scroll Logic
+                if new_items_found == 0:
+                    no_new_content_count += 1
+                else:
+                    no_new_content_count = 0 
                     
-                    # BADGE DETECTION: If author line is a badge, merge with next line
-                    badges = ['rising fan', 'top fan', 'valued commenter', 'milestone follower', 'author', 'admin']
-                    if author.lower() in badges and len(raw_lines) > 2:
-                        author = f"{raw_lines[0]} {raw_lines[1]}"
-                        text_start_idx = 2
-                    
-                    # Find Footer
-                    footer_idx = -1
-                    for i, r in enumerate(raw_lines):
-                        if i < text_start_idx: continue
-                        
-                        # FOOTER SAFETY: Footer lines are short. If > 50 chars, it's body text (even if it says 'reply')
-                        if len(r) > 60: continue
-                        
-                        r_lower = r.lower()
-                        # Relaxed footer finder
-                        if ("like" in r_lower and ("reply" in r_lower or any(c.isdigit() for c in r))) or \
-                           ("received" not in r_lower and "reply" in r_lower): # Avoid "View replies"
-                            footer_idx = i
-                            break
-                    
-                    if footer_idx == -1: 
-                        # print(f"Debug: Rejected (No Footer Line found): {author}", file=sys.stderr)
-                        continue 
-                    
-                    # Text Extraction
-                    text_parts = raw_lines[text_start_idx:footer_idx]
-                    comment_text = " ".join(text_parts).strip()
-                    
-                    # 5. CONTENT CLEANING & VALIDATION
-                    
-                    # Remove Author name from start
-                    if comment_text.lower().startswith(author.lower()):
-                         comment_text = comment_text[len(author):].strip()
-
-                    # Remove trailing junk timestamps/actions found in text body
-                    # Iteratively strip "Like", "Reply", "1h" from end until clean
-                    # This handles "1h Like" (strips Like, then strips 1h)
-                    while True:
-                        original_len = len(comment_text)
-                        # Strip "Like", "Reply", "Edited" at very end
-                        comment_text = re.sub(r'\s+(Like|Reply|Edited)\s*$', '', comment_text, flags=re.IGNORECASE)
-                        # Strip Timestamp at very end "1h", "23 m"
-                        comment_text = re.sub(r'\s+\d+\s*[mhdyw]\s*$', '', comment_text, flags=re.IGNORECASE)
-                        
-                        if len(comment_text) == original_len:
-                            break
-
-                    # 6. JUNK DETECTION (The "Smart" Filter)
-                    if not comment_text or len(comment_text) < 2: continue
-                    
-                    low_text = comment_text.lower()
-                    if low_text in ['like', 'reply', 'like reply', 'share', 'edited']: continue
-                    
-                    if re.match(r'^[\d\s\W]+$', comment_text):
-                        print(f"Debug: Rejected (Junk Chars): {comment_text}", file=sys.stderr)
-                        continue
-                    
-                    if "browser" in low_text or "facebook app" in low_text: continue
-
-                    c_id = str(hash(author + comment_text))
-                    
-                    if c_id not in seen_ids:
-                        results.append({
-                            "comment_id": c_id,
-                            "author": author,
-                            "text": comment_text,
-                            "post_url": page.url
-                        })
-                        seen_ids.add(c_id)
-                        print(f"Debug: Extracted: {author} -> {comment_text[:20]}...", file=sys.stderr)
-                    
-                    if len(author) > 50: continue
-                    
-                    c_id = str(hash(author + comment_text))
-                    
-                    if c_id not in seen_ids:
-                        results.append({
-                            "comment_id": c_id,
-                            "author": author,
-                            "text": comment_text,
-                            "post_url": page.url
-                        })
-                        seen_ids.add(c_id)
-                        print(f"Debug: Extracted Comment: {comment_text[:20]}...", file=sys.stderr)
-                        
-                except Exception as e:
-                    # print(f"Debug: Error in loop: {e}", file=sys.stderr)
-                    continue
+                # If we scraped everything visible, try scrolling
+                print(f"Debug: Scrolled. Total: {len(results)}. New: {new_items_found}", file=sys.stderr)
+                page.scroll.down(1000)
+                random_sleep(1.5, 3)
+                
+                if no_new_content_count >= 5:
+                    print("Debug: No new comments found after 5 scroll attempts. Finishing.", file=sys.stderr)
+                    break
+        
         else:
             print("Debug: Could not find 'Full Story' or 'Comment' link on feed page.", file=sys.stderr)
+                    
     except Exception as e:
         print(f"Debug: Global Crash: {e}", file=sys.stderr)
         pass
