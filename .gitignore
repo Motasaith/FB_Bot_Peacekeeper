@@ -1,0 +1,23 @@
+node_modules/
+.env
+__pycache__/
+*.pyc
+.DS_Store
+dist/
+build/
+.vscode/
+
+# Auth & Browser Profiles
+fb_auth_*.json
+chrome_profile_drission/
+user_data/
+browser_profile/
+
+# Debug Artifacts
+debug_*.html
+debug_*.png
+logs/
+*.log
+
+# Project specific
+.agent/
