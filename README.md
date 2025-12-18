@@ -88,9 +88,10 @@ npm run dev
 
 ### 4. Scan a Page
 1.  Select your connected account.
-2.  Enter the URL of a specific Facebook Post (e.g., `https://m.facebook.com/story.php...`).
+2.  Enter the **Page URL** (e.g., `https://www.facebook.com/Nike`) to monitor the latest post, OR a specific **Post URL**.
 3.  Click **"Start Watcher Scan"**.
-4.  Watch the comments appear in the Dashboard!
+4.  The bot will navigate to the page, find the latest post, and scrape the comments.
+5.  Watch the comments appear in the Dashboard!
 
 ---
 
