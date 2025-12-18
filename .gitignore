@@ -12,6 +12,7 @@ fb_auth_*.json
 chrome_profile_drission/
 user_data/
 browser_profile/
+fb_profiles/
 
 # Debug Artifacts
 debug_*.html

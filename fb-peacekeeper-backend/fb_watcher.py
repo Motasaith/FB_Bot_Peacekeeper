@@ -147,11 +147,22 @@ def scrape_comments(page_url, account_name):
 
                     # 4. Extract Author & Text
                     author = raw_lines[0]
+                    text_start_idx = 1
+                    
+                    # BADGE DETECTION: If author line is a badge, merge with next line
+                    badges = ['rising fan', 'top fan', 'valued commenter', 'milestone follower', 'author', 'admin']
+                    if author.lower() in badges and len(raw_lines) > 2:
+                        author = f"{raw_lines[0]} {raw_lines[1]}"
+                        text_start_idx = 2
                     
                     # Find Footer
                     footer_idx = -1
                     for i, r in enumerate(raw_lines):
-                        if i == 0: continue
+                        if i < text_start_idx: continue
+                        
+                        # FOOTER SAFETY: Footer lines are short. If > 50 chars, it's body text (even if it says 'reply')
+                        if len(r) > 60: continue
+                        
                         r_lower = r.lower()
                         # Relaxed footer finder
                         if ("like" in r_lower and ("reply" in r_lower or any(c.isdigit() for c in r))) or \
@@ -164,7 +175,7 @@ def scrape_comments(page_url, account_name):
                         continue 
                     
                     # Text Extraction
-                    text_parts = raw_lines[1:footer_idx]
+                    text_parts = raw_lines[text_start_idx:footer_idx]
                     comment_text = " ".join(text_parts).strip()
                     
                     # 5. CONTENT CLEANING & VALIDATION
