@@ -1,85 +1,98 @@
-# Facebook Peacekeeper Dashboard 🛡️
+# FB Peacekeeper Bot 🛡️🤖
 
-A full-stack application for managing and moderating Facebook comments using AI, N8n, and Human-in-the-Loop approval.
+> **A Stealthy, Automated Facebook Comment Monitoring & Moderation System.**
+> *Uses "Visual AI" Logic & DrissionPage for Undetectable Scraping.*
 
-## 🚀 Project Overview
+## 🌟 Overview
 
-The **FB Peacekeeper** system automates the moderation of Facebook comments.
-1.  **N8n Workflow A** detects negative comments and saves them to **MongoDB**.
-2.  **This Dashboard** (React + Express) allows a human to review the AI's suggested reply.
-3.  **Human Approval** triggers **N8n Workflow B** (via Webhook) to post the actual reply on Facebook.
+FB Peacekeeper is a full-stack automated system designed to help Facebook Page admins monitor comments without manual scrolling. It uses a **local browser automation engine** (DrissionPage) to log in and scrape comments stealthily, mimicking real human behavior to avoid detection.
 
-## 📂 Project Structure
-
-This workspace contains two main components:
-
--   **`/fb-peacekeeper-dashboard`**: The Frontend. Built with **React**, **Vite**, **Tailwind CSS**.
--   **`/fb-peacekeeper-backend`**: The Backend. Built with **Node.js**, **Express**, **MongoDB (Mongoose)**.
+The system consists of three parts:
+1.  **Dashboard (Frontend):** A modern React (Vite) UI for managing accounts and viewing results.
+2.  **Server (Backend):** A Node.js/Express API that orchestrates the automation.
+3.  **Watcher Engine (Core):** A Python script (`fb_watcher.py`) that controls the browser to fetch comments using advanced DOM parsing.
 
 ---
 
-## 🛠️ Setup & Installation
+## ✨ Features
 
-### 1. Backend Setup (API Server)
-
-The backend connects the Dashboard to your MongoDB database.
-
-1.  Navigate to the backend folder:
-    ```bash
-    cd fb-peacekeeper-backend
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  **Configuration**:
-    *   Open `.env` in the backend folder.
-    *   Add your **MongoDB Connection String** (`MONGO_URI`).
-    *   Add your **N8n Webhook URL** (`N8N_WEBHOOK_URL`) for handling replies.
-4.  Start the server:
-    ```bash
-    npm run dev
-    ```
-    *   Server runs on: `http://localhost:5000`
-
-### 2. Frontend Setup (Dashboard UI)
-
-The frontend provides the interface for approving/rejecting comments.
-
-1.  Navigate to the dashboard folder:
-    ```bash
-    cd fb-peacekeeper-dashboard
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Start the development server:
-    ```bash
-    npm run dev
-    ```
-    *   Dashboard runs on: `http://localhost:5173`
+-   **🕵️ Stealth Mode Scraping:** Uses `DrissionPage` to bypass modern anti-bot detections.
+-   **🧠 Smart Structural Filtering:** Rejects junk text (like "307 16" stats or "Most Relevant" prompts) by enforcing strict "Human Comment" structure rules (e.g., must have "Like" + "Reply").
+-   **🧹 Artifact Scrubbing:** Automatically cleans footer artifacts (like "1h Like") from comment text.
+-   **💾 Persistent Results:** Scanned comments are saved locally, so they survive page refreshes.
+-   **⚡ Live Browser Interaction:** Opens a real Chrome window for login and scraping, ensuring cookies and sessions are valid.
 
 ---
 
-## ✨ Features Implemented
+## 🛠️ Architecture
 
-*   **Pending Queue**: Fetches comments with `status: 'pending_approval'` from MongoDB.
-*   **AI Reply Review**: Displays the User, Original Comment, and AI's Suggested Reply.
-*   **Edit & Approve**: Allows editing the AI's reply before approving.
-    *   On Approve: Updates DB status to `'posted'`, saves final text, and **triggers N8n Webhook**.
-*   **Reject**: Updates DB status to `'rejected'`.
-*   **Live Status**: Real-time feedback on API operations with toast notifications.
-*   **Responsive UI**: Modern, clean interface using Tailwind CSS and Lucide icons.
+| Component | Tech Stack | Description |
+| :--- | :--- | :--- |
+| **Frontend** | React, Vite, TailwindCSS | User Interface for controls and Review. |
+| **Backend** | Node.js, Express | API layer to trigger Python scripts. |
+| **Scraper** | Python, DrissionPage | The "Hands" that browse Facebook. |
 
-## 🔌 API Endpoints (`localhost:5000`)
+---
 
-*   `GET /api/comments/pending`: List all pending comments.
-*   `POST /api/comments/:id/approve`: Approve a comment (triggers webhook).
-    *   Body: `{ text: "final reply text", url: "post_url" }`
-*   `POST /api/comments/:id/reject`: Mark a comment as rejected.
+## 🚀 Installation & Setup
 
-## ⚠️ Troubleshooting
+### Prerequisites
+-   **Node.js** (v18+)
+-   **Python** (v3.10+)
+-   **Google Chrome** installed on the machine.
 
-*   **Network Error / CORS**: Ensure the Backend Server is running on Port 5000.
-*   **Comments Not Loading**: Check your `MONGO_URI` in `.env` and ensure your database has data in the `comments_queue` collection.
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Motasaith/FB_Bot_Peacekeeper.git
+cd FB_Bot_Peacekeeper
+```
+
+### 2. Backend Setup
+```bash
+cd fb-peacekeeper-backend
+npm install
+# Install Python dependencies
+pip install DrissionPage playwright nest_asyncio
+```
+
+### 3. Frontend Setup
+```bash
+cd fb-peacekeeper-dashboard
+npm install
+```
+
+---
+
+## 🏃‍♂️ Usage
+
+### 1. Start the Backend Server
+Open a terminal in `fb-peacekeeper-backend`:
+```bash
+node server.js
+```
+*Server runs on `http://localhost:5000`*
+
+### 2. Start the Dashboard
+Open another terminal in `fb-peacekeeper-dashboard`:
+```bash
+npm run dev
+```
+*UI opens at `http://localhost:5173`*
+
+### 3. Connect an Account
+1.  Go to the **Safe Watcher** tab in the Dashboard.
+2.  Click **"Connect New Account"**.
+3.  Enter a name (e.g., "MyPersonalProfile").
+4.  A browser window will open. **Log in to Facebook manually.**
+5.  Wait for the window to close automatically. Your session is now saved!
+
+### 4. Scan a Page
+1.  Select your connected account.
+2.  Enter the URL of a specific Facebook Post (e.g., `https://m.facebook.com/story.php...`).
+3.  Click **"Start Watcher Scan"**.
+4.  Watch the comments appear in the Dashboard!
+
+---
+
+## ⚠️ Disclaimer
+This tool is for educational and administrative purposes only. Automating Facebook actions may violate their Terms of Service. Use responsibly and at your own risk. The "Stealth Mode" attempts to be safe, but no automation is 100% risk-free.
