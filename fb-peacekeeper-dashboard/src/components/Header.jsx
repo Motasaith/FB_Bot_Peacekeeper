@@ -1,31 +1,38 @@
-import React from 'react';
-import { ShieldCheck } from 'lucide-react';
+import { Headset, Moon, Sun } from 'lucide-react';
 
-const Header = ({ onNavigate, currentPage }) => {
+const Header = ({ onNavigate, currentPage, darkMode, toggleTheme }) => {
   return (
-    <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
-      <div className="flex items-center gap-2 text-blue-600">
-        <ShieldCheck size={32} />
-        <h1 className="text-xl font-bold tracking-tight text-slate-800">Peacekeeper<span className="text-blue-600">Bot</span> Control Room</h1>
+    <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between shadow-sm dark:shadow-lg transition-all">
+      <div className="flex items-center gap-2 text-blue-600 dark:text-emerald-400">
+        <Headset size={32} />
+        <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-white">
+            BizReply<span className="text-blue-600 dark:text-emerald-400">Bot</span>
+        </h1>
       </div>
-      <nav className="flex gap-4">
+      
+      <div className="flex items-center gap-4">
+        <nav className="flex gap-2">
+            <button 
+            onClick={() => onNavigate('dashboard')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                currentPage === 'dashboard' 
+                    ? 'bg-indigo-50 dark:bg-slate-800 text-indigo-700 dark:text-emerald-400 shadow-sm' 
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-white'
+            }`}
+            >
+            Dashboard
+            </button>
+
+        </nav>
+
         <button 
-          onClick={() => onNavigate('dashboard')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            currentPage === 'dashboard' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'
-          }`}
+            onClick={toggleTheme}
+            className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors"
+            title="Toggle Theme"
         >
-          Dashboard
+            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
         </button>
-        <button 
-          onClick={() => onNavigate('watcher')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            currentPage === 'watcher' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'
-          }`}
-        >
-          Safe Watcher
-        </button>
-      </nav>
+      </div>
     </header>
   );
 };

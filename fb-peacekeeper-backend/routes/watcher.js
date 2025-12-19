@@ -63,6 +63,19 @@ router.post('/connect', (req, res) => {
         return res.status(400).json({ error: 'account_name is required' });
     }
 
+    // CLEANUP: Wipe old data for this account before starting fresh login
+    const authFile = path.join(process.cwd(), `fb_auth_${account_name}.json`);
+    const profileDir = path.join(process.cwd(), 'fb_profiles', account_name);
+    
+    console.log(`Cleaning up old session for: ${account_name}`);
+    
+    try {
+        if (fs.existsSync(authFile)) fs.unlinkSync(authFile);
+        if (fs.existsSync(profileDir)) fs.rmSync(profileDir, { recursive: true, force: true });
+    } catch (e) {
+        console.error(`Cleanup warning: ${e.message}`);
+    }
+
     const scriptPath = 'login_once.py'; 
     const command = `python "${scriptPath}" --account_name "${account_name}"`;
 
@@ -92,48 +105,134 @@ router.post('/connect', (req, res) => {
     res.json({ success: true, message: 'Login window opened. Please log in and close the browser window.' });
 });
 
-// Endpoint to trigger the watcher scan
+// Endpoint to trigger the watcher scan ONLY (Fetch Mode)
 router.post('/scan', (req, res) => {
   const { target_url, account_name } = req.body;
 
-  if (!target_url) {
-    return res.status(400).json({ error: 'target_url is required' });
-  }
-  
-  if (!account_name) {
-      return res.status(400).json({ error: 'account_name is required' });
+  if (!target_url || !account_name) {
+    return res.status(400).json({ error: 'target_url and account_name are required' });
   }
 
   const scriptPath = 'fb_watcher.py'; 
   const command = `python "${scriptPath}" --page_url "${target_url}" --account_name "${account_name}"`;
 
-  console.log(`Executing: ${command}`);
+  console.log(`Executing Fetch: ${command}`);
 
-  exec(command, { cwd: process.cwd() }, (error, stdout, stderr) => {
+  exec(command, { cwd: process.cwd() }, async (error, stdout, stderr) => {
     if (error) {
       console.error(`Execution error: ${error.message}`);
       return res.status(500).json({ error: 'Failed to execute watcher script', details: error.message });
     }
-    
-    if (stderr) {
-       // console.warn(`Script stderr: ${stderr}`);
-    }
 
     try {
       const jsonOutput = JSON.parse(stdout);
-      // Check if python script returned an error object
       if (jsonOutput.error) {
            return res.status(500).json({ error: jsonOutput.error });
       }
-      res.json({ success: true, data: jsonOutput });
+
+      console.log(`[Fetch] Scraped ${jsonOutput.length} comments.`);
+      
+      const Comment = (await import('../models/Comment.js')).default;
+      let savedCount = 0;
+
+      for (const rawComment of jsonOutput) {
+          // Deduplication Check
+          const exists = await Comment.findOne({ comment_id: rawComment.comment_id });
+          if (!exists) {
+              const newComment = new Comment({
+                  comment_id: rawComment.comment_id,
+                  author_name: rawComment.author,
+                  original_comment: rawComment.text,
+                  ai_suggested_reply: "Not Analyzed Yet",
+                  post_url: rawComment.comment_url || target_url,
+                  status: 'fetched', // NEW STATUS
+                  category: null
+              });
+              await newComment.save();
+              savedCount++;
+          }
+      }
+      
+      console.log(`[Fetch] Saved ${savedCount} new comments to 'fetched' status.`);
+
+      // Return success with count of NEW fetched comments
+      res.json({ success: true, count: savedCount, message: "Comments fetched successfully." });
+
     } catch (parseError) {
-      console.error('JSON parse error:', parseError);
+      console.error('Processing error:', parseError);
       res.status(500).json({ 
-        error: 'Failed to parse watcher output', 
+        error: 'Failed to process watcher output', 
         raw_output: stdout 
       });
     }
   });
+});
+
+// Endpoint to trigger AI Analysis on 'fetched' comments
+router.post('/analyze', async (req, res) => {
+    try {
+        const Comment = (await import('../models/Comment.js')).default;
+        const { analyzeComment } = await import('../services/aiService.js');
+
+        // Find all 'fetched' comments
+        const fetchedComments = await Comment.find({ status: 'fetched' });
+        
+        console.log(`[Analyze] Processing ${fetchedComments.length} fetched comments...`);
+        
+        if (fetchedComments.length === 0) {
+            return res.json({ success: true, count: 0, message: "No fetched comments to analyze." });
+        }
+
+        const aiPromises = fetchedComments.map(async (comment) => {
+            // AI Analysis
+            const aiResult = await analyzeComment(comment.original_comment);
+            
+            // Update Comment
+            comment.ai_suggested_reply = aiResult.reply || "No reply generated";
+            comment.category = aiResult.category;
+            
+            // Logic: If IGNORE, reject or keep? Let's auto-reject SPAM/IGNORE
+            if (aiResult.reply === 'IGNORE' || aiResult.category === 'SPAM/TROLL') {
+                 comment.status = 'rejected';
+            } else {
+                 comment.status = 'pending_approval';
+            }
+            
+            await comment.save();
+            return comment;
+        });
+
+        const processed = await Promise.all(aiPromises);
+        const approvedCount = processed.filter(c => c.status === 'pending_approval').length;
+
+        console.log(`[Analyze] Analysis complete. ${approvedCount} moved to pending.`);
+
+        res.json({ success: true, count: approvedCount, message: "Analysis complete." });
+
+    } catch (e) {
+        console.error("Analysis Failed:", e);
+        res.status(500).json({ error: "Analysis failed", details: e.message });
+    }
+});
+
+// Endpoint to get user profile metadata
+router.get('/user-profile', (req, res) => {
+    // We assume mostly 'Default' account for now as per previous simplification
+    // But we can support query param ?account=Default
+    const accountName = req.query.account || 'Default';
+    const metaFile = path.join(process.cwd(), `user_metadata_${accountName}.json`);
+    
+    if (fs.existsSync(metaFile)) {
+        try {
+            const data = fs.readFileSync(metaFile, 'utf8');
+            res.json(JSON.parse(data));
+        } catch (e) {
+            console.error("Failed to read metadata", e);
+            res.status(500).json({ error: "Failed to read profile data" });
+        }
+    } else {
+        res.status(404).json({ error: "Profile not found" });
+    }
 });
 
 export default router;

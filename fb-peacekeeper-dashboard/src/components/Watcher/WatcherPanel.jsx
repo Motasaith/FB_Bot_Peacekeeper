@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Plus, Loader2, User, Globe, AlertCircle, Trash2 } from 'lucide-react';
+import { Play, LogIn, Loader2, Globe, AlertCircle, Trash2, CheckCircle2 } from 'lucide-react';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
 import CommentCard from '../CommentCard';
 
 const WatcherPanel = () => {
-  const [accounts, setAccounts] = useState([]);
-  const [selectedAccount, setSelectedAccount] = useState('');
   const [targetUrl, setTargetUrl] = useState('');
-  const [newAccountName, setNewAccountName] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [scannedComments, setScannedComments] = useState([]);
-  const [showConnectModal, setShowConnectModal] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+
+  // Hardcoded single account
+  const ACCOUNT_NAME = "Default";
 
   /* Persistence Logic */
   useEffect(() => {
@@ -24,6 +24,7 @@ const WatcherPanel = () => {
               console.error("Failed to parse saved comments");
           }
       }
+      checkConnection();
   }, []);
 
   const saveComments = (comments) => {
@@ -39,59 +40,31 @@ const WatcherPanel = () => {
       }
   };
 
-  const fetchAccounts = async () => {
+  const checkConnection = async () => {
     try {
       const response = await api.get('/watcher/accounts');
-      setAccounts(response.data.accounts);
-      if (response.data.accounts.length > 0 && !selectedAccount) {
-        setSelectedAccount(response.data.accounts[0]);
-      } else if (response.data.accounts.length === 0) {
-        setSelectedAccount('');
-      }
+      const accounts = response.data.accounts || [];
+      setIsConnected(accounts.includes(ACCOUNT_NAME));
     } catch (err) {
       console.error("Error fetching accounts:", err);
-      toast.error("Failed to load accounts");
     }
-  };
-
-  const handleDeleteAccount = async (accountName) => {
-      if (!window.confirm(`Are you sure you want to delete ${accountName}?`)) return;
-      
-      try {
-          await api.delete(`/watcher/accounts/${accountName}`);
-          toast.success("Account deleted");
-          if (selectedAccount === accountName) setSelectedAccount('');
-          fetchAccounts();
-      } catch (err) {
-          console.error(err);
-          toast.error("Failed to delete account");
-      }
   };
 
   const handleConnect = async () => {
-    if (!newAccountName.trim()) {
-        toast.warning("Please enter an account name");
-        return;
-    }
-    
     setIsConnecting(true);
     try {
       // Connect call triggers the python script which opens the browser
-      const response = await api.post('/watcher/connect', { account_name: newAccountName });
+      const response = await api.post('/watcher/connect', { account_name: ACCOUNT_NAME });
       toast.info(response.data.message);
-      setShowConnectModal(false);
       
-      // Since login is manual and outside the browser's control context (it waits for close),
-      // we can polling or just ask user to refresh.
-      // But actually, we should just assume user will do it.
-      // We can reload accounts after a delay or let user do it.
-      setTimeout(fetchAccounts, 5000); 
+      // Poll a few times to see if they logged in
+      setTimeout(checkConnection, 5000); 
+      setTimeout(checkConnection, 10000); 
       
     } catch (err) {
       toast.error("Failed to start login intent");
     } finally {
       setIsConnecting(false);
-      setNewAccountName('');
     }
   };
 
@@ -100,22 +73,20 @@ const WatcherPanel = () => {
         toast.warning("Please enter a Page URL");
         return;
     }
-    if (!selectedAccount) {
-        toast.warning("Please select an account");
-        return;
+    
+    // We don't block scan if !isConnected, usually, but warning is good
+    if (!isConnected) {
+        toast.warning("You might need to Connect Account first if you haven't logged in.");
     }
 
     setIsScanning(true);
-    // setScannedComments([]); // Don't clear immediately, maybe append? Or clear if user wants.
-    // User requested persistence, but scan replaces usually. Let's replace for now but logic is persisted.
-    // Actually, usually a new scan implies new results.
     setScannedComments([]); 
     localStorage.removeItem('watcher_scanned_comments');
 
     try {
       const response = await api.post('/watcher/scan', {
         target_url: targetUrl,
-        account_name: selectedAccount
+        account_name: ACCOUNT_NAME
       });
 
       if (response.data.success) {
@@ -133,117 +104,81 @@ const WatcherPanel = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-8 max-w-6xl">
+    <div className="container mx-auto p-6 space-y-8 max-w-4xl">
         <div className="flex items-center justify-between">
             <div>
                 <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Safe Watcher</h1>
                 <p className="text-slate-500 mt-1">Automated, stealthy Facebook comment monitoring.</p>
             </div>
-            <button 
-                onClick={() => setShowConnectModal(true)}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all shadow-sm"
-            >
-                <Plus size={20} />
-                Connect New Account
-            </button>
+            
+            <div className="flex items-center gap-4">
+                 {isConnected ? (
+                     <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full text-sm font-medium border border-emerald-100">
+                         <CheckCircle2 size={16} />
+                         <span>System Connected</span>
+                     </div>
+                 ) : (
+                    <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full text-sm font-medium border border-amber-100">
+                         <AlertCircle size={16} />
+                         <span>Not Connected</span>
+                     </div>
+                 )}
+                 
+                 <button 
+                    onClick={handleConnect}
+                    disabled={isConnecting}
+                    className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all shadow-sm disabled:opacity-70"
+                >
+                    {isConnecting ? <Loader2 className="animate-spin" size={20} /> : <LogIn size={20} />}
+                    {isConnected ? "Reconnect Account" : "Connect Account"}
+                </button>
+            </div>
         </div>
 
-        {/* Account Selection */}
-        <div className="grid md:grid-cols-3 gap-6">
-            <div className="md:col-span-1 space-y-4">
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Select Identity</h2>
-                        <button onClick={fetchAccounts} className="text-indigo-600 hover:text-indigo-800 text-xs font-medium">Refresh</button>
-                    </div>
-                    
-                    {accounts.length === 0 ? (
-                        <div className="text-center py-8 text-slate-400 bg-slate-50 rounded-lg border border-dashed border-slate-200">
-                            <User size={32} className="mx-auto mb-2 opacity-50" />
-                            <p className="text-sm">No accounts connected</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-2">
-                            {accounts.map(acc => (
-                                <div
-                                    key={acc}
-                                    role="button"
-                                    onClick={() => setSelectedAccount(acc)}
-                                    className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-all cursor-pointer ${
-                                        selectedAccount === acc 
-                                        ? 'bg-indigo-50 border-indigo-200 text-indigo-700 font-medium border' 
-                                        : 'hover:bg-slate-50 border border-transparent text-slate-600'
-                                    }`}
-                                >
-                                    <div className={`w-2 h-2 rounded-full ${selectedAccount === acc ? 'bg-indigo-500' : 'bg-slate-300'}`} />
-                                    <span className="flex-1 truncate">{acc}</span>
-                                    <button 
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDeleteAccount(acc);
-                                        }}
-                                        className="p-1 hover:bg-red-100 text-slate-400 hover:text-red-500 rounded transition-colors"
-                                        title="Delete Account"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Scanner Controls */}
-            <div className="md:col-span-2 space-y-4">
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                    <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Scanner Configuration</h2>
-                    
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Target Page URL</label>
-                            <div className="relative">
-                                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                                <input 
-                                    type="text" 
-                                    value={targetUrl}
-                                    onChange={(e) => setTargetUrl(e.target.value)}
-                                    placeholder="https://www.facebook.com/Nike"
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="pt-2">
-                           <button
-                                onClick={handleScan}
-                                disabled={isScanning || !selectedAccount || !targetUrl}
-                                className={`w-full py-3 rounded-lg font-bold text-white shadow-md flex items-center justify-center gap-2 transition-all ${
-                                    isScanning 
-                                    ? 'bg-slate-400 cursor-not-allowed' 
-                                    : 'bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98]'
-                                }`}
-                            >
-                                {isScanning ? (
-                                    <>
-                                        <Loader2 className="animate-spin" size={20} />
-                                        Scanning Globally... (Stealth Mode)
-                                    </>
-                                ) : (
-                                    <>
-                                        <Play size={20} fill="currentColor" />
-                                        Start Watcher Scan
-                                    </>
-                                )}
-                            </button>
-                            <p className="text-xs text-center text-slate-400 mt-3 flex items-center justify-center gap-1">
-                                <AlertCircle size={12} />
-                                Random delays active (3-7s) to prevent bans. Please be patient.
-                            </p>
-                        </div>
+        {/* Configurations - Full Width now since sidebar is gone */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-6">Scanner Configuration</h2>
+            
+            <div className="flex gap-4 items-end">
+                <div className="flex-1">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Target Page URL</label>
+                    <div className="relative">
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <input 
+                            type="text" 
+                            value={targetUrl}
+                            onChange={(e) => setTargetUrl(e.target.value)}
+                            placeholder="https://www.facebook.com/Nike"
+                            className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
                     </div>
                 </div>
+
+                <div className="w-48">
+                   <button
+                        onClick={handleScan}
+                        disabled={isScanning || !targetUrl}
+                        className={`w-full py-3 rounded-lg font-bold text-white shadow-md flex items-center justify-center gap-2 transition-all ${
+                            isScanning 
+                            ? 'bg-slate-400 cursor-not-allowed' 
+                            : 'bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98]'
+                        }`}
+                    >
+                        {isScanning ? (
+                            <Loader2 className="animate-spin" size={20} />
+                        ) : (
+                            <>
+                                <Play size={20} fill="currentColor" />
+                                Start Scan
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
+             <p className="text-xs text-slate-400 mt-4 flex items-center gap-1">
+                <AlertCircle size={12} />
+                <span>Random delays active (3-7s) to prevent bans. Browser will open and close automatically.</span>
+            </p>
         </div>
 
         {/* Results Area */}
@@ -278,57 +213,12 @@ const WatcherPanel = () => {
                                 timestamp: new Date().toISOString()
                             }}
                             onRefresh={() => {}} 
-                            // Passed functions are dummies since actions are disabled in scanned mode usually
                             onApprove={() => {}} 
                             onReject={() => {}}
                         />
                     ))}
                 </div>
              </div>
-        )}
-
-        {/* Connect Modal */}
-        {showConnectModal && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm p-4">
-                <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200">
-                    <h3 className="text-xl font-bold text-slate-900 mb-2">Connect Facebook Account</h3>
-                    <p className="text-slate-500 text-sm mb-6">
-                        Enter a label for this account (e.g., "Personal", "Work"). <br/>
-                        A browser window will open on the server. <br/>
-                        <strong>Log in manually. The window will close automatically when done.</strong>
-                    </p>
-                    
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Account Label</label>
-                            <input 
-                                type="text" 
-                                autoFocus
-                                value={newAccountName}
-                                onChange={(e) => setNewAccountName(e.target.value)}
-                                placeholder="my-fb-account"
-                                className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
-                        </div>
-                        
-                        <div className="flex gap-3 pt-2">
-                             <button 
-                                onClick={() => setShowConnectModal(false)}
-                                className="flex-1 py-2.5 rounded-lg font-medium text-slate-600 hover:bg-slate-100 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button 
-                                onClick={handleConnect}
-                                disabled={isConnecting}
-                                className="flex-1 py-2.5 rounded-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm flex items-center justify-center gap-2"
-                            >
-                                {isConnecting ? <Loader2 className="animate-spin" size={18}/> : 'Launch Browser'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         )}
     </div>
   );

@@ -25,7 +25,7 @@ const CommentSchema = new mongoose.Schema({
   status: {
     type: String,
     default: 'pending_approval',
-    enum: ['pending_approval', 'posted', 'rejected']
+    enum: ['fetched', 'pending_approval', 'posted', 'rejected']
   },
   created_at: {
     type: Date,
