@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import FetchPage from './pages/FetchPage';
 import SentimentPage from './pages/SentimentPage';
 import ReplyPage from './pages/ReplyPage';
+import RunAllPage from './pages/RunAllPage';
 import Footer from './components/Footer';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -35,6 +36,8 @@ function App() {
         return <SentimentPage onNavigate={setCurrentPage} />;
       case 'replies':
         return <ReplyPage onNavigate={setCurrentPage} />;
+      case 'run-all':
+        return <RunAllPage onNavigate={setCurrentPage} />;
       default:
         return <Dashboard onNavigate={setCurrentPage} />;
     }
