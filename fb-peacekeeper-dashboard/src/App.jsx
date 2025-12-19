@@ -56,7 +56,7 @@ function App() {
          {renderPage()}
       </main>
 
-      <Footer />
+      <Footer onNavigate={setCurrentPage} />
 
       <ToastContainer position="bottom-right" theme={darkMode ? "dark" : "light"} />
     </div>
