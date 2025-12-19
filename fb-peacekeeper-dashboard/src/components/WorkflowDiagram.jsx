@@ -52,12 +52,12 @@ const WorkflowDiagram = () => {
                         transition={{ delay: index * 0.3 }}
                         className="flex flex-col items-center flex-1"
                     >
-                        <div className="w-16 h-16 rounded-2xl bg-slate-900 border-2 border-slate-700 flex items-center justify-center mb-6 shadow-xl relative z-20 group hover:border-indigo-500 transition-colors duration-300">
+                        <div className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center mb-6 shadow-xl relative z-20 group hover:border-indigo-500 transition-colors duration-300">
                              <div className="absolute inset-0 bg-indigo-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                             <step.icon className="w-8 h-8 text-indigo-400 group-hover:text-white transition-colors" />
+                             <step.icon className="w-8 h-8 text-indigo-500 dark:text-indigo-400 group-hover:text-indigo-600 dark:group-hover:text-white transition-colors" />
                         </div>
-                        <h3 className="text-lg font-bold text-slate-200 mb-2">{step.title}</h3>
-                        <p className="text-sm text-slate-500 text-center max-w-[250px] leading-relaxed">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-2">{step.title}</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-500 text-center max-w-[250px] leading-relaxed">
                             {step.description}
                         </p>
                     </motion.div>
@@ -71,12 +71,12 @@ const WorkflowDiagram = () => {
                         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-700 flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/20">
                              <step.icon className="w-8 h-8 text-white" />
                         </div>
-                        <h3 className="text-lg font-bold text-slate-100 mb-2">{step.title}</h3>
-                        <p className="text-sm text-slate-400 text-center px-6">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">{step.title}</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 text-center px-6">
                             {step.description}
                         </p>
                         {index < StepParams.length - 1 && (
-                            <div className="w-[2px] h-8 bg-slate-800 my-4" />
+                            <div className="w-[2px] h-8 bg-slate-200 dark:bg-slate-800 my-4" />
                         )}
                     </div>
                 ))}

@@ -1,26 +1,29 @@
 # FB Peacekeeper Bot 🛡️🤖
 
 > **A Stealthy, Automated Facebook Comment Monitoring & Moderation System.**
-> *Uses "Visual AI" Logic & DrissionPage for Undetectable Scraping.*
+> *Now featuring Multi-Page Workflow, Auto-Pilot Mode, and Advanced AI Analysis.*
 
 ## 🌟 Overview
 
-FB Peacekeeper is a full-stack automated system designed to help Facebook Page admins monitor comments without manual scrolling. It uses a **local browser automation engine** (DrissionPage) to log in and scrape comments stealthily, mimicking real human behavior to avoid detection.
+FB Peacekeeper is a full-stack automated system designed to help Facebook Page admins engage with customers and filter spam without manual effort. It uses a **local browser automation engine** (DrissionPage) to log in and scrape comments stealthily, mimicking real human behavior.
 
-The system consists of three parts:
-1.  **Dashboard (Frontend):** A modern React (Vite) UI for managing accounts and viewing results.
-2.  **Server (Backend):** A Node.js/Express API that orchestrates the automation.
+The system has been upgraded to a **Multi-Page Application (MPA)** architecture for better scalability and user experience.
+
+### Key Components:
+1.  **Dashboard (Frontend):** A modern React (Vite) UI with Dark/Light mode, "Auto-Pilot" orchestration, and dedicated workflow pages.
+2.  **Server (Backend):** A Node.js/Express API that manages the scraper and AI services.
 3.  **Watcher Engine (Core):** A Python script (`fb_watcher.py`) that controls the browser to fetch comments using advanced DOM parsing.
 
 ---
 
 ## ✨ Features
 
+-   **⚡ Auto-Pilot Mode:** Run the entire Fetch → Analyze → Review workflow with a single click.
 -   **🕵️ Stealth Mode Scraping:** Uses `DrissionPage` to bypass modern anti-bot detections.
--   **🧠 Smart Structural Filtering:** Rejects junk text (like "307 16" stats or "Most Relevant" prompts) by enforcing strict "Human Comment" structure rules (e.g., must have "Like" + "Reply").
+-   **🧠 AI Sentiment Analysis:** Classifies comments (Lead, Support, Question, Spam) and drafts intelligent replies using **Gemini 2.0 Flash Lite**.
+-   **🎨 Modern UI:** Glassmorphism design, fully responsive Dark/Light themes, and animated interactions.
+-   **💾 Persistent Results:** Scanned comments are saved locally (MongoDB), surviving page refreshes.
 -   **🧹 Artifact Scrubbing:** Automatically cleans footer artifacts (like "1h Like") from comment text.
--   **💾 Persistent Results:** Scanned comments are saved locally, so they survive page refreshes.
--   **⚡ Live Browser Interaction:** Opens a real Chrome window for login and scraping, ensuring cookies and sessions are valid.
 
 ---
 
@@ -28,9 +31,10 @@ The system consists of three parts:
 
 | Component | Tech Stack | Description |
 | :--- | :--- | :--- |
-| **Frontend** | React, Vite, TailwindCSS | User Interface for controls and Review. |
-| **Backend** | Node.js, Express | API layer to trigger Python scripts. |
+| **Frontend** | React, Vite, TailwindCSS | Multi-page UI with specialized views for each step. |
+| **Backend** | Node.js, Express, MongoDB | API layer to trigger Python scripts and manage data. |
 | **Scraper** | Python, DrissionPage | The "Hands" that browse Facebook. |
+| **AI Engine** | OpenAI SDK (OpenRouter) | Powered by Google Gemini 2.0 Flash Lite. |
 
 ---
 
@@ -54,6 +58,7 @@ npm install
 # Install Python dependencies
 pip install DrissionPage playwright nest_asyncio
 ```
+*Create a `.env` file in backend with `OPENROUTER_API_KEY` and `MONGO_URI`.*
 
 ### 3. Frontend Setup
 ```bash
@@ -65,33 +70,35 @@ npm install
 
 ## 🏃‍♂️ Usage
 
-### 1. Start the Backend Server
-Open a terminal in `fb-peacekeeper-backend`:
+### 1. Start the System
+Backend:
 ```bash
+cd fb-peacekeeper-backend
 node server.js
 ```
-*Server runs on `http://localhost:5000`*
-
-### 2. Start the Dashboard
-Open another terminal in `fb-peacekeeper-dashboard`:
+Frontend:
 ```bash
+cd fb-peacekeeper-dashboard
 npm run dev
 ```
-*UI opens at `http://localhost:5173`*
 
-### 3. Connect an Account
-1.  Go to the **Safe Watcher** tab in the Dashboard.
-2.  Click **"Connect New Account"**.
-3.  Enter a name (e.g., "MyPersonalProfile").
-4.  A browser window will open. **Log in to Facebook manually.**
-5.  Wait for the window to close automatically. Your session is now saved!
+### 2. Connect Account
+1.  Navigate to **Fetch Comments** page.
+2.  Click the user icon to Connect a new account.
+3.  Log in manually in the browser window that appears.
 
-### 4. Scan a Page
-1.  Select your connected account.
-2.  Enter the **Page URL** (e.g., `https://www.facebook.com/Nike`) to monitor the latest post, OR a specific **Post URL**.
-3.  Click **"Start Watcher Scan"**.
-4.  The bot will navigate to the page, find the latest post, and scrape the comments.
-5.  Watch the comments appear in the Dashboard!
+### 3. Run the Workflow
+You can run the workflow manually step-by-step or use Auto-Pilot.
+
+**Option A: Auto-Pilot (Recommended)**
+1.  On the Dashboard, click **"⚡ Run Auto-Pilot"**.
+2.  Enter the URL.
+3.  Watch the logs as it fetches, analyzes, and prepares results automatically.
+
+**Option B: Manual Flow**
+1.  **Fetch Page:** Enter URL and scrape comments.
+2.  **Sentiment Page:** Run AI analysis on fetched comments.
+3.  **Replies Page:** Review AI drafts, edit if needed, and post replies.
 
 ---
 

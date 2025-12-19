@@ -10,7 +10,7 @@ const Card = ({ title, description, icon: Icon, color, onClick, delay }) => {
             transition={{ delay, duration: 0.4 }}
             whileHover={{ y: -5, transition: { duration: 0.2 } }}
             onClick={onClick}
-            className="group relative overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 p-8 cursor-pointer hover:border-slate-700 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all"
+            className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all font-sans"
         >
             <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity ${color}`}>
                 <Icon size={120} />
@@ -18,19 +18,19 @@ const Card = ({ title, description, icon: Icon, color, onClick, delay }) => {
             
             <div className="relative z-10">
                 <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-6 ${color} bg-opacity-20`}>
-                    <Icon className={`w-7 h-7 text-white`} />
+                    <Icon className={`w-7 h-7 ${color.replace('bg-', 'text-')}`} />
                 </div>
                 
-                <h3 className="text-2xl font-bold text-slate-100 mb-3">{title}</h3>
-                <p className="text-slate-400 mb-8 leading-relaxed max-w-sm">{description}</p>
+                <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-3">{title}</h3>
+                <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed max-w-sm">{description}</p>
                 
-                <div className="flex items-center text-sm font-semibold text-slate-300 group-hover:text-white transition-colors">
+                <div className="flex items-center text-sm font-semibold text-slate-500 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-white transition-colors">
                     <span>Launch Tool</span>
                     <ArrowRight className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform" />
                 </div>
             </div>
             
-             <div className="absolute inset-0 bg-gradient-to-br from-transparent to-slate-900/50 pointer-events-none" />
+             <div className="absolute inset-0 bg-gradient-to-br from-transparent to-slate-100/50 dark:to-slate-900/50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
         </motion.div>
     );
 };

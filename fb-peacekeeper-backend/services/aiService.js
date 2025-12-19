@@ -12,7 +12,7 @@ const openai = new OpenAI({
   },
 });
 
-const MODEL = 'qwen/qwen-2.5-vl-7b-instruct:free';
+const MODEL = 'google/gemini-2.0-flash-lite-preview-02-05:free';
 
 /**
  * Analyzes a comment and generates a reply if necessary.
@@ -53,7 +53,6 @@ export const analyzeComment = async (commentText) => {
         { role: 'system', content: 'You are a skilled social media manager. Output strictly in JSON.' },
         { role: 'user', content: prompt }
       ],
-      // response_format: { type: "json_object" } // Removed to avoid 400 errors with some providers
     });
 
     const content = completion.choices[0].message.content;
@@ -74,21 +73,5 @@ export const analyzeComment = async (commentText) => {
     console.error("AI Service Error Full Details:", error.response ? error.response.data : error.message);
     // Return safe fallback instead of throwing
     return { category: 'QUESTION', reply: 'IGNORE' };
-  }
-};
-    try {
-        result = JSON.parse(content);
-    } catch (e) {
-        // Fallback if model wraps in markdown
-        const cleaned = content.replace(/```json/g, '').replace(/```/g, '').trim();
-        result = JSON.parse(cleaned);
-    }
-    
-    return result;
-
-  } catch (error) {
-    console.error("AI Analysis Failed:", error.message);
-    // Fallback safe response
-    return { category: "error", reply: "IGNORE" };
   }
 };
