@@ -1,106 +1,94 @@
-# FB Peacekeeper Bot 🛡️🤖
+# BizReply Bot 🚀🤖
 
-> **A Stealthy, Automated Facebook Comment Monitoring & Moderation System.**
-> *Now featuring Multi-Page Workflow, Auto-Pilot Mode, and Advanced AI Analysis.*
+> **Your 24/7 AI Sales & Support Assistant for Facebook.**
+> *Automate replies, capture leads, and engage customers instantly.*
 
 ## 🌟 Overview
 
-FB Peacekeeper is a full-stack automated system designed to help Facebook Page admins engage with customers and filter spam without manual effort. It uses a **local browser automation engine** (DrissionPage) to log in and scrape comments stealthily, mimicking real human behavior.
+**BizReply Bot** is a powerful automation suite designed for businesses to maximize engagement on Facebook. Instead of manually replying to hundreds of comments, let BizReply handle it.
 
-The system has been upgraded to a **Multi-Page Application (MPA)** architecture for better scalability and user experience.
+It uses **Visual AI Automation** (DrissionPage) to operate stealthily like a human social media manager, ensuring your page stays safe while you scale.
 
-### Key Components:
-1.  **Dashboard (Frontend):** A modern React (Vite) UI with Dark/Light mode, "Auto-Pilot" orchestration, and dedicated workflow pages.
-2.  **Server (Backend):** A Node.js/Express API that manages the scraper and AI services.
-3.  **Watcher Engine (Core):** A Python script (`fb_watcher.py`) that controls the browser to fetch comments using advanced DOM parsing.
-
----
-
-## ✨ Features
-
--   **⚡ Auto-Pilot Mode:** Run the entire Fetch → Analyze → Review workflow with a single click.
--   **🕵️ Stealth Mode Scraping:** Uses `DrissionPage` to bypass modern anti-bot detections.
--   **🧠 AI Sentiment Analysis:** Classifies comments (Lead, Support, Question, Spam) and drafts intelligent replies using **Gemini 2.0 Flash Lite**.
--   **🎨 Modern UI:** Glassmorphism design, fully responsive Dark/Light themes, and animated interactions.
--   **💾 Persistent Results:** Scanned comments are saved locally (MongoDB), surviving page refreshes.
--   **🧹 Artifact Scrubbing:** Automatically cleans footer artifacts (like "1h Like") from comment text.
+### Why BizReply?
+-   **📈 Boost Sales:** Instantly detects leads asking for prices/details and replies with your offer.
+-   **💬 24/7 Support:** Answers general queries immediately, keeping your response time low.
+-   **🛡️ Spam Shield:** Automatically filters out trolls and spam comments.
 
 ---
 
-## 🛠️ Architecture
+## ✨ Key Features
 
-| Component | Tech Stack | Description |
+-   **⚡ Auto-Pilot Workflow:** One-click automation: `Fetch` → `Analyze` → `Reply`.
+-   **🧠 Smart AI Engine:** Powered by **Gemini 2.0**, it understands context (Urdu/English) and drafts human-like responses.
+-   **🎨 Modern Dashboard:** A beautiful, easy-to-use control center to manage your page.
+-   **💾 Local Data Ownership:** All your customer data and comments are stored securely on your own machine (MongoDB).
+-   **🕵️ Undetectable:** Uses advanced browser emulation to avoid "Bot" detection.
+
+---
+
+## 🛠️ Tech Stack
+
+| Component | Technology | Role |
 | :--- | :--- | :--- |
-| **Frontend** | React, Vite, TailwindCSS | Multi-page UI with specialized views for each step. |
-| **Backend** | Node.js, Express, MongoDB | API layer to trigger Python scripts and manage data. |
-| **Scraper** | Python, DrissionPage | The "Hands" that browse Facebook. |
-| **AI Engine** | OpenAI SDK (OpenRouter) | Powered by Google Gemini 2.0 Flash Lite. |
+| **Frontend** | React, Vite, TailwindCSS | The Command Center UI. |
+| **Backend** | Node.js, Express | API & Automation Orchestrator. |
+| **Database** | MongoDB | Stores leads and conversation history. |
+| **AI** | Google Gemini 2.0 (via OpenRouter) | The "Brain" behind the replies. |
+| **Engine** | Python + DrissionPage | The "Hands" that browse Facebook. |
 
 ---
 
-## 🚀 Installation & Setup
+## 🚀 Quick Start
 
 ### Prerequisites
 -   **Node.js** (v18+)
 -   **Python** (v3.10+)
--   **Google Chrome** installed on the machine.
+-   **Google Chrome**
 
-### 1. Clone the Repository
+### 1. Installation
 ```bash
 git clone https://github.com/Motasaith/FB_Bot_Peacekeeper.git
 cd FB_Bot_Peacekeeper
 ```
 
-### 2. Backend Setup
+### 2. Setup Backend
 ```bash
 cd fb-peacekeeper-backend
 npm install
-# Install Python dependencies
 pip install DrissionPage playwright nest_asyncio
 ```
-*Create a `.env` file in backend with `OPENROUTER_API_KEY` and `MONGO_URI`.*
+*Create a `.env` file with `OPENROUTER_API_KEY` and `MONGO_URI`.*
 
-### 3. Frontend Setup
+### 3. Setup Frontend
 ```bash
 cd fb-peacekeeper-dashboard
 npm install
 ```
 
----
-
-## 🏃‍♂️ Usage
-
-### 1. Start the System
-Backend:
+### 4. Launch
+**Terminal 1 (Backend):**
 ```bash
 cd fb-peacekeeper-backend
 node server.js
 ```
-Frontend:
+
+**Terminal 2 (Frontend):**
 ```bash
 cd fb-peacekeeper-dashboard
 npm run dev
 ```
 
-### 2. Connect Account
-1.  Navigate to **Fetch Comments** page.
-2.  Click the user icon to Connect a new account.
-3.  Log in manually in the browser window that appears.
+---
 
-### 3. Run the Workflow
-You can run the workflow manually step-by-step or use Auto-Pilot.
+## 📖 How to Use
 
-**Option A: Auto-Pilot (Recommended)**
-1.  On the Dashboard, click **"⚡ Run Auto-Pilot"**.
-2.  Enter the URL.
-3.  Watch the logs as it fetches, analyzes, and prepares results automatically.
-
-**Option B: Manual Flow**
-1.  **Fetch Page:** Enter URL and scrape comments.
-2.  **Sentiment Page:** Run AI analysis on fetched comments.
-3.  **Replies Page:** Review AI drafts, edit if needed, and post replies.
+1.  **Connect Account:** use the profile icon on the Fetch page to log in securely.
+2.  **Auto-Pilot:** Click **⚡ Run Auto-Pilot** on the Dashboard.
+    -   Paste your Post URL.
+    -   Sit back as it extracts comments, analyzes intent, and drafts replies.
+3.  **Review & Post:** Go to the **Replies** page to approve the AI drafts and publish them.
 
 ---
 
 ## ⚠️ Disclaimer
-This tool is for educational and administrative purposes only. Automating Facebook actions may violate their Terms of Service. Use responsibly and at your own risk. The "Stealth Mode" attempts to be safe, but no automation is 100% risk-free.
+**BizReply Bot** is an automation tool. While we use advanced stealth techniques to mimic human behavior, automating Facebook interactions is at your own risk. We recommend using reasonable delays (built-in) to keep your account safe.
