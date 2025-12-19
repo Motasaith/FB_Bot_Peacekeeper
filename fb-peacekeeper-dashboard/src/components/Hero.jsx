@@ -17,18 +17,18 @@ const Hero = () => {
         >
           <div className="flex items-center gap-3 mb-4 text-emerald-600 dark:text-emerald-400 font-medium tracking-wider text-sm uppercase">
             <Headset size={18} />
-            <span>Auto-Responder Active • System Online</span>
+            <span>AI Sales Agent • Community Moderator</span>
           </div>
           
           <h1 className="text-5xl font-bold mb-6 leading-tight text-slate-800 dark:text-white">
-            Turn every comment into a <br/>
+            Master your Facebook <br/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-emerald-400 dark:to-cyan-400">
-              loyal customer.
+              Community & Sales.
             </span>
           </h1>
           
           <p className="text-slate-600 dark:text-slate-300 text-lg leading-relaxed max-w-lg">
-            I am your automated sales assistant. I engage leads, answer queries, and manage support so you can focus on growing your business.
+            Automate your workflow: converting leads into customers, and turning toxic comments into hidden history. One tool, two superpowers.
           </p>
         </motion.div>
       </div>

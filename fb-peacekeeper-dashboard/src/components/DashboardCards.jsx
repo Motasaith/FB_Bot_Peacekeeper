@@ -48,15 +48,15 @@ const DashboardCards = ({ onNavigate }) => {
             />
             <Card 
                 title="Sentiment AI"
-                description="Run advanced AI analysis to categorize leads, support requests, and spam."
+                description="Analyze intent: Detect Leads, Support requests, Hate Speech, and Spam."
                 icon={BarChart2}
                 color="bg-purple-500"
                 delay={0.4}
                 onClick={() => onNavigate('sentiment')}
             />
              <Card 
-                title="Auto-Replies"
-                description="Review AI-generated drafts, approve responses, and engage with customers."
+                title="Action Center"
+                description="Approve Sales Replies, Hide Toxic Comments, and Ban Spammers."
                 icon={MessageSquare}
                 color="bg-emerald-500"
                 delay={0.6}

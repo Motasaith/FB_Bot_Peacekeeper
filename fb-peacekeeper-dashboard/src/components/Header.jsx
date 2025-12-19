@@ -6,7 +6,7 @@ const Header = ({ onNavigate, currentPage, darkMode, toggleTheme }) => {
       <div className="flex items-center gap-2 text-blue-600 dark:text-emerald-400">
         <Headset size={32} />
         <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-white">
-            BizReply<span className="text-blue-600 dark:text-emerald-400">Bot</span>
+            FB <span className="text-blue-600 dark:text-emerald-400">Automator</span>
         </h1>
       </div>
       
