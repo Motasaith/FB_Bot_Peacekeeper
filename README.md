@@ -1,28 +1,35 @@
-# BizReply Bot 🚀🤖
+# FB BizReply & Peacekeeper Bot 🛡️🚀🤖
 
-> **Your 24/7 AI Sales & Support Assistant for Facebook.**
-> *Automate replies, capture leads, and engage customers instantly.*
+> **The Ultimate Dual-Mode Facebook Automation System.**
+> *Choose your path: Automated Sales Assistant OR Community Moderator.*
 
 ## 🌟 Overview
 
-**BizReply Bot** is a powerful automation suite designed for businesses to maximize engagement on Facebook. Instead of manually replying to hundreds of comments, let BizReply handle it.
+This is a powerful, self-hosted automation tool designed for two distinct purposes. Whether you run a business or manage a community, this bot adapts to your needs using **Visual AI Automation** (DrissionPage) and **Gemini 2.0 AI**.
 
-It uses **Visual AI Automation** (DrissionPage) to operate stealthily like a human social media manager, ensuring your page stays safe while you scale.
+### 🌗 Two Modes, One Engine
 
-### Why BizReply?
--   **📈 Boost Sales:** Instantly detects leads asking for prices/details and replies with your offer.
--   **💬 24/7 Support:** Answers general queries immediately, keeping your response time low.
--   **🛡️ Spam Shield:** Automatically filters out trolls and spam comments.
+#### 🚀 1. BizReply Mode (For Business)
+*Turn comments into cash.*
+-   **Lead Detection:** Identifies users asking for prices or details.
+-   **Auto-Sales:** Replies instantly with your offer or CTA.
+-   **Customer Support:** Answers FAQs 24/7.
+
+#### 🛡️ Peacekeeper Mode (For Communities)
+*Keep your comment section clean.*
+-   **Toxic Filter:** Detects and hides hate speech, harassment, and trolls.
+-   **Spam Nuke:** Instantly identifies and removes crypto scams and bot spam.
+-   **Sentiment Watch:** Alerts you to negative sentiment spikes.
 
 ---
 
 ## ✨ Key Features
 
--   **⚡ Auto-Pilot Workflow:** One-click automation: `Fetch` → `Analyze` → `Reply`.
--   **🧠 Smart AI Engine:** Powered by **Gemini 2.0**, it understands context (Urdu/English) and drafts human-like responses.
--   **🎨 Modern Dashboard:** A beautiful, easy-to-use control center to manage your page.
--   **💾 Local Data Ownership:** All your customer data and comments are stored securely on your own machine (MongoDB).
--   **🕵️ Undetectable:** Uses advanced browser emulation to avoid "Bot" detection.
+-   **⚡ Auto-Pilot Workflow:** `Fetch` → `Analyze` → `Reply/Moderate` in one click.
+-   **🧠 Advanced AI Brain:** Powered by **Gemini 2.0 Flash Lite** (via OpenRouter) to understand context, sarcasm, and intent (English/Urdu/Roman Urdu).
+-   **🕵️ Stealth Technology:** Uses `DrissionPage` to mimic human browser behavior, bypassing anti-bot checks.
+-   **💾 Local Data:** You own your data. Everything is stored locally in MongoDB.
+-   **🎨 Dynamic Dashboard:** A beautiful UI with Dark/Light themes to manage everything.
 
 ---
 
@@ -30,11 +37,11 @@ It uses **Visual AI Automation** (DrissionPage) to operate stealthily like a hum
 
 | Component | Technology | Role |
 | :--- | :--- | :--- |
-| **Frontend** | React, Vite, TailwindCSS | The Command Center UI. |
-| **Backend** | Node.js, Express | API & Automation Orchestrator. |
-| **Database** | MongoDB | Stores leads and conversation history. |
-| **AI** | Google Gemini 2.0 (via OpenRouter) | The "Brain" behind the replies. |
-| **Engine** | Python + DrissionPage | The "Hands" that browse Facebook. |
+| **Frontend** | React, Vite, TailwindCSS | The Command Center. |
+| **Backend** | Node.js, Express | Automation Orchestrator. |
+| **Database** | MongoDB | Data Storage. |
+| **AI** | Google Gemini 2.0 | The Intelligence Layer. |
+| **Engine** | Python + DrissionPage | The Browser Automation Layer. |
 
 ---
 
@@ -51,7 +58,7 @@ git clone https://github.com/Motasaith/FB_Bot_Peacekeeper.git
 cd FB_Bot_Peacekeeper
 ```
 
-### 2. Setup Backend
+### 2. Backend Setup
 ```bash
 cd fb-peacekeeper-backend
 npm install
@@ -59,36 +66,32 @@ pip install DrissionPage playwright nest_asyncio
 ```
 *Create a `.env` file with `OPENROUTER_API_KEY` and `MONGO_URI`.*
 
-### 3. Setup Frontend
+### 3. Frontend Setup
 ```bash
 cd fb-peacekeeper-dashboard
 npm install
 ```
 
-### 4. Launch
-**Terminal 1 (Backend):**
-```bash
-cd fb-peacekeeper-backend
-node server.js
-```
-
-**Terminal 2 (Frontend):**
-```bash
-cd fb-peacekeeper-dashboard
-npm run dev
-```
+### 4. Running the System
+**Terminal 1 (Server):** `node server.js` (in backend folder)
+**Terminal 2 (UI):** `npm run dev` (in dashboard folder)
 
 ---
 
-## 📖 How to Use
+## 📖 Usage Guide
 
-1.  **Connect Account:** use the profile icon on the Fetch page to log in securely.
-2.  **Auto-Pilot:** Click **⚡ Run Auto-Pilot** on the Dashboard.
-    -   Paste your Post URL.
-    -   Sit back as it extracts comments, analyzes intent, and drafts replies.
-3.  **Review & Post:** Go to the **Replies** page to approve the AI drafts and publish them.
+### Step 1: Connect Account
+Go to the **Fetch Page** and use the **Connect** button to log in securely via the automated browser.
+
+### Step 2: Choose Your Workflow
+-   **For Sales:** Use the **Auto-Pilot**. Identify leads and reply with offers.
+-   **For Moderation:** Fetch comments and check the **Sentiment Page**. Use the AI tags to ban/hide spam users.
+
+### Step 3: Execute
+-   **Review:** Check the AI's drafts on the **Replies Page**.
+-   **Post:** Click "Approve" to let the bot post the reply or take the moderation action.
 
 ---
 
 ## ⚠️ Disclaimer
-**BizReply Bot** is an automation tool. While we use advanced stealth techniques to mimic human behavior, automating Facebook interactions is at your own risk. We recommend using reasonable delays (built-in) to keep your account safe.
+**FB BizReply & Peacekeeper** is a powerful automation tool. Automating Facebook actions carries risks and may violate Terms of Service. Use responsibly using the built-in safety delays. We are not responsible for account restrictions.
