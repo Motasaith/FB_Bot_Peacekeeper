@@ -18,7 +18,7 @@ const Footer = ({ onNavigate }) => {
 
         <div className="flex flex-col items-center md:items-end gap-2">
             <p className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 font-medium">
-            Designed & Developed by <span className="text-blue-600 dark:text-emerald-400 font-bold">Motasaith</span>
+            Designed & Developed by <span className="text-blue-600 dark:text-emerald-400 font-bold">Abdul Rauf Azhar</span>
             </p>
             <div className="flex gap-6 text-xs text-slate-500">
             <button onClick={() => onNavigate('privacy')} className="hover:text-blue-600 dark:hover:text-emerald-400 transition-colors">Privacy Policy</button>

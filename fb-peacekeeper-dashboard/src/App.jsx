@@ -5,6 +5,8 @@ import FetchPage from './pages/FetchPage';
 import SentimentPage from './pages/SentimentPage';
 import ReplyPage from './pages/ReplyPage';
 import RunAllPage from './pages/RunAllPage';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsConditions from './pages/TermsConditions';
 import Footer from './components/Footer';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -38,6 +40,10 @@ function App() {
         return <ReplyPage onNavigate={setCurrentPage} />;
       case 'run-all':
         return <RunAllPage onNavigate={setCurrentPage} />;
+      case 'privacy':
+        return <PrivacyPolicy />;
+      case 'terms':
+        return <TermsConditions />;
       default:
         return <Dashboard onNavigate={setCurrentPage} />;
     }
