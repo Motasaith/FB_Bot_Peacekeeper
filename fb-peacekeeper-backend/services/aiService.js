@@ -12,7 +12,7 @@ const openai = new OpenAI({
   },
 });
 
-const MODEL = 'google/gemini-2.0-flash-lite-preview-02-05:free';
+const MODEL = 'qwen/qwen-2.5-vl-7b-instruct:free';
 
 /**
  * Analyzes a comment and generates a reply if necessary.
