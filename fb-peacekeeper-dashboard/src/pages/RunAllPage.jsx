@@ -29,7 +29,7 @@ const RunAllPage = ({ onNavigate }) => {
             addLog("Connecting to Facebook Watcher...");
             
             const fetchRes = await api.post('/watcher/scan', { 
-                page_url: url,
+                target_url: url,
                 account_name: "Default" 
             });
 
@@ -100,13 +100,22 @@ const RunAllPage = ({ onNavigate }) => {
                         </div>
 
                         {status === 'idle' || status === 'error' ? (
-                            <button
-                                onClick={runAutoPilot}
-                                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02]"
-                            >
-                                <Play size={20} fill="currentColor" />
-                                <span>Start Auto-Pilot</span>
-                            </button>
+                            <div className="space-y-3">
+                                <button
+                                    onClick={runAutoPilot}
+                                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02]"
+                                >
+                                    <Play size={20} fill="currentColor" />
+                                    <span>Start Auto-Pilot</span>
+                                </button>
+                                <button
+                                    onClick={() => onNavigate('replies')}
+                                    className="w-full text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 py-2 text-sm font-semibold transition flex items-center justify-center gap-2"
+                                >
+                                    <span>Skip to Results</span>
+                                    <ArrowRight size={16} />
+                                </button>
+                            </div>
                         ) : status === 'complete' ? (
                             <button
                                 onClick={() => onNavigate('replies')}

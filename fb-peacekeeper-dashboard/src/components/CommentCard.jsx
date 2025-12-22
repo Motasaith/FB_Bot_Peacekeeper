@@ -30,18 +30,18 @@ const CommentCard = ({ comment, onApprove, onReject, variant = 'review' }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: 200, transition: { duration: 0.2 } }}
-      className={`bg-white rounded-xl shadow-sm border overflow-hidden mb-4 ${
-          isScanned ? 'border-indigo-100' : 'border-slate-200'
+      className={`bg-white dark:bg-slate-900 rounded-xl shadow-sm border overflow-hidden mb-4 ${
+          isScanned ? 'border-indigo-100 dark:border-slate-800' : 'border-slate-200 dark:border-slate-700'
       }`}
     >
-      <div className={`grid grid-cols-1 ${isScanned ? '' : 'md:grid-cols-2'} divide-y md:divide-y-0 md:divide-x divide-slate-100`}>
+      <div className={`grid grid-cols-1 ${isScanned ? '' : 'md:grid-cols-2'} divide-y md:divide-y-0 md:divide-x divide-slate-100 dark:divide-slate-800`}>
         
         {/* Left Side: Comment Content */}
         <div className={`p-6 ${
-            isScanned ? 'bg-white' : 'bg-red-50/30 border-l-4 border-red-400'
+            isScanned ? 'bg-white dark:bg-slate-900' : 'bg-red-50/30 dark:bg-red-900/10 border-l-4 border-red-400'
         }`}>
           <div className="flex items-center justify-between mb-3">
-            <div className={`flex items-center gap-2 ${isScanned ? 'text-indigo-600' : 'text-red-600'}`}>
+            <div className={`flex items-center gap-2 ${isScanned ? 'text-indigo-600 dark:text-indigo-400' : 'text-red-600 dark:text-red-400'}`}>
               {isScanned ? <MessageSquareWarning size={18} className="text-indigo-500" /> : <MessageSquareWarning size={18} />}
               <span className="text-xs font-bold uppercase tracking-wider">
                   {isScanned ? 'Fetched Comment' : 'Negative Comment'}
@@ -60,12 +60,12 @@ const CommentCard = ({ comment, onApprove, onReject, variant = 'review' }) => {
            
           </div>
           
-          <p className="text-slate-800 font-medium text-lg leading-relaxed mb-4">
+          <p className="text-slate-800 dark:text-slate-200 font-medium text-lg leading-relaxed mb-4">
             "{comment.text}"
           </p>
           
-          <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
-            <span className="bg-slate-100 px-2 py-1 rounded text-slate-600">{comment.author}</span>
+          <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-slate-600 dark:text-slate-300">{comment.author}</span>
             <span>•</span>
             <span>{comment.timestamp ? new Date(comment.timestamp).toLocaleString() : 'Just now'}</span>
           </div>
@@ -73,8 +73,8 @@ const CommentCard = ({ comment, onApprove, onReject, variant = 'review' }) => {
 
         {/* Right Side: AI Draft & Actions (Only in Review Mode) */}
         {!isScanned && (
-            <div className="p-6 flex flex-col h-full bg-gradient-to-br from-white to-blue-50/50">
-            <div className="flex items-center gap-2 text-blue-600 mb-3">
+            <div className="p-6 flex flex-col h-full bg-gradient-to-br from-white to-blue-50/50 dark:from-slate-900 dark:to-slate-800/50">
+            <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-3">
                 <Sparkles size={18} />
                 <span className="text-xs font-bold uppercase tracking-wider">AI Suggested Reply</span>
             </div>
@@ -82,14 +82,14 @@ const CommentCard = ({ comment, onApprove, onReject, variant = 'review' }) => {
             <textarea
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                className="w-full flex-grow min-h-[100px] p-3 text-slate-700 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none resize-none transition-all text-base mb-4 shadow-sm"
+                className="w-full flex-grow min-h-[100px] p-3 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none resize-none transition-all text-base mb-4 shadow-sm"
                 placeholder="Edit the ai reply..."
             />
 
             <div className="flex items-center justify-end gap-3 mt-auto">
                 <button
                 onClick={handleReject}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-red-500 transition-colors font-medium text-sm"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-red-500 dark:hover:text-red-400 transition-colors font-medium text-sm"
                 >
                 <X size={18} />
                 Ignore

@@ -112,4 +112,47 @@ router.post('/:id/reject', async (req, res) => {
   }
 });
 
+// POST /api/comments/reject-all
+router.post('/reject-all', async (req, res) => {
+    try {
+        const result = await Comment.updateMany(
+            { status: 'pending_approval' },
+            { $set: { status: 'rejected' } }
+        );
+        res.json({ success: true, count: result.modifiedCount, message: "All pending comments rejected." });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// POST /api/comments/approve-all
+router.post('/approve-all', async (req, res) => {
+    try {
+        const comments = await Comment.find({ status: 'pending_approval' });
+        
+        const results = await Promise.all(comments.map(async (comment) => {
+            comment.status = 'posted';
+            await comment.save();
+
+            // Trigger N8N
+            if (process.env.N8N_WEBHOOK_URL) {
+                try {
+                    await axios.post(process.env.N8N_WEBHOOK_URL, {
+                        db_id: comment._id,
+                        final_text: comment.ai_suggested_reply,
+                        post_url: comment.post_url
+                    });
+                } catch (e) {
+                    console.error(`Failed webhook for ${comment._id}`);
+                }
+            }
+            return comment._id;
+        }));
+
+        res.json({ success: true, count: results.length, message: "All pending comments approved." });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 export default router;

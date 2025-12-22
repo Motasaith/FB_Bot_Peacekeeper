@@ -40,4 +40,14 @@ export const triggerAnalysis = async () => {
     return response.data;
 };
 
+export const rejectAllComments = async () => {
+    const response = await api.post('/comments/reject-all');
+    return response.data;
+};
+
+export const approveAllComments = async () => {
+    const response = await api.post('/comments/approve-all');
+    return response.data;
+};
+
 export default api;

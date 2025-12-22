@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchFetchedComments, triggerAnalysis, rejectComment } from '../services/api'; 
-import { Loader2, Play, Trash2, ArrowLeft, BarChart2 } from 'lucide-react';
+import { Loader2, Play, Trash2, ArrowLeft, ArrowRight, BarChart2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -124,8 +124,23 @@ const SentimentPage = ({ onNavigate }) => {
                     ))}
                 </AnimatePresence>
                 {comments.length === 0 && !analyzing && (
-                    <div className="text-center text-slate-400 py-10 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
-                        No new comments found. Go back to Fetch Step.
+                    <div className="text-center py-10 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center gap-4">
+                        <p className="text-slate-500 dark:text-slate-400">No new comments to analyze.</p>
+                        <div className="flex gap-3">
+                            <button 
+                                onClick={() => onNavigate('fetch')}
+                                className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                            >
+                                Back to Fetch
+                            </button>
+                            <button 
+                                onClick={() => onNavigate('replies')}
+                                className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors flex items-center gap-2"
+                            >
+                                <span>Go to Inbox</span>
+                                <ArrowRight size={16} />
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
