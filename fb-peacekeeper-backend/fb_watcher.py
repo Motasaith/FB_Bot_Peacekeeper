@@ -16,7 +16,8 @@ def scrape_comments(page_url, account_name):
     co.set_user_data_path(f"fb_profiles/{account_name}") 
     
     # Legacy Mobile Emulation (Android 6) - Forces mbasic.facebook.com more reliably
-    co.set_user_agent("Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Mobile Safari/537.36")
+    # iPhone 14 Pro - Forces clean mobile layout for ALL accounts
+    co.set_user_agent("Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1")
     
     # Launch!
     page = ChromiumPage(co)

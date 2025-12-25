@@ -10,6 +10,7 @@ const RunAllPage = ({ onNavigate }) => {
     const [status, setStatus] = useState('idle'); // idle, fetching, analyzing, complete, error
     const [logs, setLogs] = useState([]);
     const [url, setUrl] = useState("https://www.facebook.com/TrendXPakistan"); // Default for demo
+    const [mode, setMode] = useState('peacekeeper');
 
     const addLog = (msg) => setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
 
@@ -21,7 +22,7 @@ const RunAllPage = ({ onNavigate }) => {
 
         setStatus('fetching');
         setLogs([]);
-        addLog("Starting Auto-Pilot...");
+        addLog(`Starting Auto-Pilot in ${mode.toUpperCase()} mode...`);
         
         try {
             // Step 1: Fetch
@@ -42,7 +43,7 @@ const RunAllPage = ({ onNavigate }) => {
             // Step 2: Analyze
             setStatus('analyzing');
             addLog("Initializing AI Analysis...");
-            const analyzeRes = await triggerAnalysis();
+            const analyzeRes = await triggerAnalysis(mode);
             
             if (analyzeRes) { // Assuming it returns data or we verify logic
                  addLog("AI Analysis Complete.");
@@ -99,8 +100,34 @@ const RunAllPage = ({ onNavigate }) => {
                             />
                         </div>
 
+                        <div className="pt-2">
+                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">AI Persona</label>
+                             <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex gap-1">
+                                <button
+                                    onClick={() => setMode('peacekeeper')}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all ${
+                                    mode === 'peacekeeper'
+                                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                                    }`}
+                                >
+                                    <span>🛡️ Peacekeeper</span>
+                                </button>
+                                <button
+                                    onClick={() => setMode('business')}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all ${
+                                    mode === 'business'
+                                        ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                                    }`}
+                                >
+                                    <span>💼 Business</span>
+                                </button>
+                            </div>
+                        </div>
+
                         {status === 'idle' || status === 'error' ? (
-                            <div className="space-y-3">
+                            <div className="space-y-3 pt-2">
                                 <button
                                     onClick={runAutoPilot}
                                     className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/30 flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02]"

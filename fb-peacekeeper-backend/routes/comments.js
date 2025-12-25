@@ -48,7 +48,20 @@ const approveLogic = async (req, res, idFromParams = null) => {
 router.get('/pending', async (req, res) => {
   try {
     const comments = await Comment.find({ status: 'pending_approval' }).sort({ created_at: -1 });
-    res.json(comments);
+    
+    // Map to Frontend format (Same as fetched)
+    const mapped = comments.map(c => ({
+      _id: c._id,
+      id: c._id,
+      text: c.original_comment,
+      author: c.author_name,
+      timestamp: c.created_at,
+      url: c.post_url,
+      ai_reply_draft: c.ai_suggested_reply,
+      status: c.status
+    }));
+    
+    res.json(mapped);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

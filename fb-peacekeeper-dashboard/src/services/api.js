@@ -35,8 +35,8 @@ export const fetchFetchedComments = async () => {
     return response.data;
 };
 
-export const triggerAnalysis = async () => {
-    const response = await api.post('/watcher/analyze');
+export const triggerAnalysis = async (mode = 'peacekeeper') => {
+    const response = await api.post('/watcher/analyze', { mode });
     return response.data;
 };
 

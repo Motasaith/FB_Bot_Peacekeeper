@@ -4,6 +4,8 @@ import fs from 'fs';
 import path from 'path';
 
 const router = express.Router();
+// Helper pause
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Endpoint to get list of available accounts
 router.get('/accounts', (req, res) => {
@@ -81,14 +83,6 @@ router.post('/connect', (req, res) => {
 
     console.log(`Starting login for: ${account_name}`);
     
-    // We do NOT wait for this to finish, because it waits for user interaction (window close)
-    // However, exec defaults to waiting? No, exec buffers, but callback is called on exit.
-    // If we want to return response immediately, we shouldn't wait in the request handler?
-    // Actually, user expects "Window Opened" response.
-    
-    // exec is async, but the callback triggers on exit.
-    // exec is async, but the callback triggers on exit.
-    // exec is async, but the callback triggers on exit.
     const childProcess = exec(command, { cwd: process.cwd() }); 
 
     childProcess.stdout.on('data', (data) => {
@@ -98,120 +92,100 @@ router.post('/connect', (req, res) => {
     childProcess.stderr.on('data', (data) => {
         console.error(`[Login Script Error]: ${data}`);
     });
-
-    // process.unref() // If we wanted to detach. But we might want to log output?
     
     // Just return success immediately saying window opened.
     res.json({ success: true, message: 'Login window opened. Please log in and close the browser window.' });
 });
 
-// Endpoint to trigger the watcher scan ONLY (Fetch Mode)
+// 1. SCAN (Fetch Only)
 router.post('/scan', (req, res) => {
   const { target_url, account_name } = req.body;
+  if (!target_url || !account_name) return res.status(400).json({ error: 'Missing args' });
 
-  if (!target_url || !account_name) {
-    return res.status(400).json({ error: 'target_url and account_name are required' });
-  }
-
-  const scriptPath = 'fb_watcher.py'; 
-  const command = `python "${scriptPath}" --page_url "${target_url}" --account_name "${account_name}"`;
-
+  const command = `python "fb_watcher.py" --page_url "${target_url}" --account_name "${account_name}"`;
   console.log(`Executing Fetch: ${command}`);
 
   exec(command, { cwd: process.cwd() }, async (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Execution error: ${error.message}`);
-      return res.status(500).json({ error: 'Failed to execute watcher script', details: error.message });
-    }
+    if (error) return res.status(500).json({ error: 'Script failed', details: error.message });
 
     try {
       const jsonOutput = JSON.parse(stdout);
-      if (jsonOutput.error) {
-           return res.status(500).json({ error: jsonOutput.error });
-      }
+      if (jsonOutput.error) return res.status(500).json({ error: jsonOutput.error });
 
-      console.log(`[Fetch] Scraped ${jsonOutput.length} comments.`);
-      
       const Comment = (await import('../models/Comment.js')).default;
       let savedCount = 0;
 
-      for (const rawComment of jsonOutput) {
-          // Deduplication Check
-          const exists = await Comment.findOne({ comment_id: rawComment.comment_id });
+      for (const item of jsonOutput) {
+          const exists = await Comment.findOne({ comment_id: item.comment_id });
           if (!exists) {
-              const newComment = new Comment({
-                  comment_id: rawComment.comment_id,
-                  author_name: rawComment.author,
-                  original_comment: rawComment.text,
+              await new Comment({
+                  comment_id: item.comment_id,
+                  author_name: item.author,
+                  original_comment: item.text,
                   ai_suggested_reply: "Not Analyzed Yet",
-                  post_url: rawComment.comment_url || target_url,
-                  status: 'fetched', // NEW STATUS
-                  category: null
-              });
-              await newComment.save();
+                  post_url: item.post_url,
+                  status: 'fetched',
+                  is_main_post: item.is_main_post || false // SAVE THE FLAG
+              }).save();
               savedCount++;
           }
       }
-      
-      console.log(`[Fetch] Saved ${savedCount} new comments to 'fetched' status.`);
+      res.json({ success: true, count: savedCount, message: "Fetch complete." });
 
-      // Return success with count of NEW fetched comments
-      res.json({ success: true, count: savedCount, message: "Comments fetched successfully." });
-
-    } catch (parseError) {
-      console.error('Processing error:', parseError);
-      res.status(500).json({ 
-        error: 'Failed to process watcher output', 
-        raw_output: stdout 
-      });
+    } catch (e) {
+      console.error('Fetch Error:', e);
+      res.status(500).json({ error: 'Parse error', raw: stdout });
     }
   });
 });
 
-// Endpoint to trigger AI Analysis on 'fetched' comments
+// 2. ANALYZE (Process Fetched) - NOW WITH MODE
 router.post('/analyze', async (req, res) => {
     try {
+        // Read MODE from the request (sent by Dashboard)
+        const { mode } = req.body; // 'business' or 'peacekeeper'
+        const activeMode = mode || 'peacekeeper'; // Default
+
         const Comment = (await import('../models/Comment.js')).default;
         const { analyzeComment } = await import('../services/aiService.js');
 
-        // Find all 'fetched' comments
         const fetchedComments = await Comment.find({ status: 'fetched' });
-        
-        console.log(`[Analyze] Processing ${fetchedComments.length} fetched comments...`);
-        
-        if (fetchedComments.length === 0) {
-            return res.json({ success: true, count: 0, message: "No fetched comments to analyze." });
-        }
+        console.log(`[Analyze] Mode: ${activeMode} | Count: ${fetchedComments.length}`);
 
-        const aiPromises = fetchedComments.map(async (comment) => {
-            // AI Analysis
-            const aiResult = await analyzeComment(comment.original_comment);
-            
-            // Update Comment
-            comment.ai_suggested_reply = aiResult.reply || "No reply generated";
-            comment.category = aiResult.category;
-            
-            // Logic: If IGNORE, reject or keep? Let's auto-reject SPAM/IGNORE
-            if (aiResult.reply === 'IGNORE' || aiResult.category === 'SPAM/TROLL') {
-                 comment.status = 'rejected';
-            } else {
-                 comment.status = 'pending_approval';
+        if (fetchedComments.length === 0) return res.json({ success: true, count: 0, message: "Nothing to analyze." });
+
+        let approvedCount = 0;
+
+        for (const comment of fetchedComments) {
+            try {
+                // Pass MODE and IS_MAIN_POST to AI
+                const aiResult = await analyzeComment(
+                    comment.original_comment, 
+                    activeMode, 
+                    comment.is_main_post
+                );
+                
+                comment.ai_suggested_reply = aiResult.reply || "No reply";
+                comment.category = aiResult.category;
+                
+                if (aiResult.reply === 'IGNORE' || aiResult.category === 'SPAM') {
+                     comment.status = 'rejected';
+                } else {
+                     comment.status = 'pending_approval';
+                     approvedCount++;
+                }
+                
+                await comment.save();
+                await delay(3000); // Rate Limit Protection
+
+            } catch (err) {
+                console.error(`[Analyze Error]: ${err.message}`);
             }
-            
-            await comment.save();
-            return comment;
-        });
-
-        const processed = await Promise.all(aiPromises);
-        const approvedCount = processed.filter(c => c.status === 'pending_approval').length;
-
-        console.log(`[Analyze] Analysis complete. ${approvedCount} moved to pending.`);
-
+        }
         res.json({ success: true, count: approvedCount, message: "Analysis complete." });
 
     } catch (e) {
-        console.error("Analysis Failed:", e);
-        res.status(500).json({ error: "Analysis failed", details: e.message });
+        res.status(500).json({ error: e.message });
     }
 });
 

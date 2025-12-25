@@ -8,6 +8,7 @@ const SentimentPage = ({ onNavigate }) => {
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [analyzing, setAnalyzing] = useState(false);
+    const [mode, setMode] = useState('peacekeeper');
 
     useEffect(() => {
         loadComments();
@@ -30,8 +31,8 @@ const SentimentPage = ({ onNavigate }) => {
         if (comments.length === 0) return;
         setAnalyzing(true);
         try {
-            toast.info("AI Analysis Started...");
-            const res = await triggerAnalysis();
+            toast.info(`AI Analysis Started in ${mode.toUpperCase()} mode...`);
+            const res = await triggerAnalysis(mode);
             if (res.success) {
                 toast.success(`Analysis Complete! ${res.count} comments moved to Inbox.`);
                 // Refresh list (should be empty now)
@@ -80,6 +81,32 @@ const SentimentPage = ({ onNavigate }) => {
                     Run the AI to detect leads, support issues, and spam.
                 </p>
                 
+                <div className="max-w-xs mx-auto mb-6">
+                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">AI Persona</label>
+                     <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex gap-1">
+                        <button
+                            onClick={() => setMode('peacekeeper')}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all ${
+                            mode === 'peacekeeper'
+                                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                            }`}
+                        >
+                            <span>🛡️ Peacekeeper</span>
+                        </button>
+                        <button
+                            onClick={() => setMode('business')}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all ${
+                            mode === 'business'
+                                ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                            }`}
+                        >
+                            <span>💼 Business</span>
+                        </button>
+                    </div>
+                </div>
+
                 <button 
                     onClick={handleAnalyze}
                     disabled={analyzing || comments.length === 0}
